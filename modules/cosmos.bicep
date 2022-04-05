@@ -20,16 +20,39 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-06-15' = {
       }
     ]
   }
+
+  // TODO: add a resource of type Microsoft.DocumentDB/databaseAccounts/sqlDatabases
+  //       - make the resource a nested child resource of the cosmos db account resource
+  //       - give the database the exact name that your function app expects (check your cosmos db input/output bindings)
+  resource database 'sqlDatabases' = {
+    name: 'azure101'
+    properties: {
+      resource: {
+        id: 'azure101'
+      }
+    }
+
+    // TODO: add a resource of type Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers
+    //       - make the resource a nested child resource of the sqlDatabases resource (i.e. Account > Database > Container)
+    //       - make sure to give the container the name that your function app expects (check your cosmos db input/output bindings)
+    //       - configure the "partitionKey" property (properties.resource.partitionKey) to match what your function app expects (again, check bindings)
+    resource container 'containers' = {
+      name: 'images'
+      properties: {
+        resource: {
+          id: 'images'
+          partitionKey: {
+            paths: [
+              '/id'
+            ]
+          }
+        }
+      }
+      
+    }
+  }
+
 }
-
-// TODO: add a resource of type Microsoft.DocumentDB/databaseAccounts/sqlDatabases
-//       - make the resource a nested child resource of the cosmos db account resource
-//       - give the database the exact name that your function app expects (check your cosmos db input/output bindings)
-
-// TODO: add a resource of type Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers
-//       - make the resource a nested child resource of the sqlDatabases resource (i.e. Account > Database > Container)
-//       - make sure to give the container the name that your function app expects (check your cosmos db input/output bindings)
-//       - configure the "partitionKey" property (properties.resource.partitionKey) to match what your function app expects (again, check bindings)
 
 // TODO: add an output for the connection string of the Cosmos DB _account_ resource
 //       - hint: use the listConnectionStrings() method on the account resource
@@ -42,3 +65,4 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-06-15' = {
 //              }
 //            ]
 //          } 
+output connectionString string = cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
